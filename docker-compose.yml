@@ -1,0 +1,98 @@
+---
+version: '3.2'
+services:
+  openvpn:
+    cap_add:
+     - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    ports:
+     - "1194:1194/udp"
+    restart: always
+    volumes:
+     - /home/docker/openvpn:/etc/openvpn
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    volumes:
+      - /home/docker/plex/library:/config
+      - /mnt/md0/tv:/data/tvshows
+      - /mnt/md0/movies:/data/movies
+      - /home/docker/plex/transcode:/transcode
+    network_mode: host
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+      - VERSION=public
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    volumes:
+      - /home/docker/sonarr:/config:rw
+      - /mnt/md0/tv:/tv:rw
+      - /mnt/md0/downloads/complete:/downloads:rw
+    ports:
+      - 1002:8989
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    volumes:
+      - /home/docker/radarr:/config
+      - /mnt/md0/movies:/movies
+      - /mnt/md0/downloads/complete:/downloads
+    ports:
+      - 1003:7878
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+    restart:
+      always
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    volumes:
+      - /home/docker/sabnzbd/config:/config
+      - /mnt/md0/downloads/complete:/downloads
+      - /mnt/md0/downloads/incomplete:/incomplete-downloads
+    ports:
+      - 1004:8080
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+  transmission:
+    image: linuxserver/transmission
+    volumes:
+      - /mnt/md0/downloads/complete:/downloads
+      - /home/docker/transmission/.config:/etc/transmission-daemon
+      - /mnt/md0/downloads/transmission:/var/lib/transmission-daemon
+    ports:
+      - 51413:51413
+      - 1005:9091
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    restart: always
+    volumes:
+      - /home/docker/jackett/config:/config
+      - /mnt/md0/downloads/complete:/downloads
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=Europe/Amsterdam
+    ports:
+      - 1007:9117
